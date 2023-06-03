@@ -1,10 +1,10 @@
 let jsonData = JSON.parse(responseBody);
 const agreementIds = jsonData.items.map(agreement => agreement.id);
-
 const personId = pm.environment.get('personId');
+
 const accrualsUrl = pm.environment.replaceIn(
     "{{accruals_service_url}}/resources/accruals?size=1000&tenantId={{tenantId}}");
-const agreementTargtsUrl = pm.environment.replaceIn(
+const agreementTargetsUrl = pm.environment.replaceIn(
     "{{accruals_service_url}}/resources/agreement-targets?size=1000&tenantId={{tenantId}}");
 
 const buildRequest = function (method, url) {
@@ -23,7 +23,6 @@ function sendRequest(req) {
       if (err) {
         return reject(err);
       }
-
       return resolve(res);
     })
   });
@@ -56,7 +55,7 @@ const deleteAccrualsByAgreementId = async function (agreementId) {
 
 const deleteAgreementTargetsByAgreementId = async function (agreementId) {
   const filter = `&filter=agreementId=="${agreementId}"`;
-  let request = buildRequest('GET', agreementTargtsUrl + filter);
+  let request = buildRequest('GET', agreementTargetsUrl + filter);
 
   let result = await sendRequest(request);
   if (result.code === 200) {
@@ -66,7 +65,8 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
 
     for (const agreementTargetId of agreementTargetIds) {
 
-      let agreementTargetsSingleResourceUrl = `{{accruals_service_url}}/resources/agreement-targets/${agreementTargetId}?tenantId={{tenantId}}`;
+      let agreementTargetsSingleResourceUrl =
+          `{{accruals_service_url}}/resources/agreement-targets/${agreementTargetId}?tenantId={{tenantId}}`;
       let deleteRequest = buildRequest('DELETE',
           pm.environment.replaceIn(agreementTargetsSingleResourceUrl));
 
@@ -76,13 +76,13 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
             `Agreement Target "${agreementTargetId}" deleted successfully`);
       }
     }
-
   }
 }
 
 const deleteAgreementById = async function (agreementId) {
 
-  let agreementsSingleResourceUrl = `{{accruals_service_url}}/resources/agreements/${agreementId}?tenantId={{tenantId}}`;
+  let agreementsSingleResourceUrl
+      = `{{accruals_service_url}}/resources/agreements/${agreementId}?tenantId={{tenantId}}`;
 
   let deleteRequest = buildRequest('DELETE',
       pm.environment.replaceIn(agreementsSingleResourceUrl));
@@ -91,7 +91,6 @@ const deleteAgreementById = async function (agreementId) {
   if (result.code === 200) {
     console.log(`Agreement "${agreementId}" deleted successfully`);
   }
-
 }
 
 const deleteAll = async function (agreementIds) {

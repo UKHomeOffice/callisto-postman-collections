@@ -1,11 +1,15 @@
-var jsonData = JSON.parse(responseBody);
-var agreementId = jsonData.items[0].id
+const jsonData = JSON.parse(responseBody);
+const agreementId = jsonData.items[0].id
+postman.setEnvironmentVariable("agreementId", agreementId);
 const agreementStartDate =  jsonData.items[0].startDate;
 const agreementEndDate =  jsonData.items[0].endDate;
 // const agreementStartDate =  "2023-04-01";
 // const agreementEndDate =  "2023-04-05";
 
-postman.setEnvironmentVariable("agreementId", agreementId);
+const accrualsUrl = pm.environment.replaceIn(
+    "{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}");
+const agreementTargetsUrl = pm.environment.replaceIn(
+    "{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}");
 
 pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.min.js", (err, res) => {
   //convert the response to text and save it as an environment variable
@@ -14,22 +18,21 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
   // eval will evaluate the JavaScript code and initialize the min.js
   eval(pm.collectionVariables.get("jsjoda_library"));
 
-
-
   console.log("Agreement Start Date:", agreementStartDate);
   console.log("Agreement End Date:", agreementEndDate);
 
   const datesBetween = function(start, end) {
     let startDate = JSJoda.LocalDate.parse(start);
     let endDate = JSJoda.LocalDate.parse(end);
-    for(var arr=[],dt=startDate; !dt.isAfter(endDate); dt=dt.plusDays(1)){
+    let arr = [];
+    for(let dt=startDate; !dt.isAfter(endDate); dt=dt.plusDays(1)){
       arr.push(dt);
     }
     return arr;
   };
 
   const buildAccrual = function(accrualDate, accrualTypeId, cumulativeTarget, cumulativeTotal) {
-    return accrual = {
+    return  {
       "tenantId": pm.environment.get('tenantId'),
       "personId": pm.environment.get('personId'),
       "agreementId": pm.environment.get('agreementId'),
@@ -71,7 +74,6 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     "e502eebb-4663-4e5b-9445-9a20441c18d9": "Annual Target Hours",
     "5f06e6ce-1422-4a0c-89dd-f4952e735202": "Night Hours"
   };
-
   //     "05bbd915-e907-4259-a2e2-080d7956afec": "Weekend Hours",
   //     "b94bb25a-7fe2-4599-91ab-f0d58e013aed": "Public Holidays",
   //     "2a5ea69d-1a2c-409d-b430-43a5dbc403b3": "On-call Weekday",
@@ -81,10 +83,6 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
   //     "c73030ed-ed28-4d59-85e8-185f70d85a94": "Rostered Shift Allowance",
   //     "787d2d12-2aff-4253-b382-bcefded61124": "Public Holiday Credit"
   // };
-
-
-  var accrualsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}");
-  var agreementTargtsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}");
 
   const buildRequest = function(method, url, body) {
     return {
@@ -115,8 +113,8 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
             if (result.code === 200) {
               console.log(`"${value}" Accrual placeholder created successfully for ${accrualDate}`);
             }
-          }
-      );
+
+      });
     }
   }
 
@@ -125,13 +123,12 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     let accrualType = accrualTypes[key];
 
     // agreementTargets map is key'd by accrualTypeId, so key == accrualTypeId and value = totalTarget
-    let request = buildRequest('POST', agreementTargtsUrl, buildAgreementTarget(key, value));
+    let request = buildRequest('POST', agreementTargetsUrl, buildAgreementTarget(key, value));
     pm.sendRequest(request, function (error, result) {
-          if (result.code === 200) {
-            console.log(`"${accrualType}" Agreement Target created successfully`);
-          }
-        }
-    );
+      if (result.code === 200) {
+        console.log(`"${accrualType}" Agreement Target created successfully`);
+      }
+    });
   }
 
-})
+});
