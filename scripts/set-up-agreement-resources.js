@@ -29,7 +29,7 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
   };
 
   const buildAccrual = function(accrualDate, accrualTypeId, cumulativeTarget, cumulativeTotal) {
-    const accrual = {
+    return accrual = {
       "tenantId": pm.environment.get('tenantId'),
       "personId": pm.environment.get('personId'),
       "agreementId": pm.environment.get('agreementId'),
@@ -42,19 +42,15 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
         "total": 0
       }
     };
-
-    return accrual;
   }
 
   const buildAgreementTarget = function(accrualTypeId, targetTotal) {
-    const agreementTarget = {
+    return {
       "tenantId": pm.environment.get('tenantId'),
       "agreementId": pm.environment.get('agreementId'),
       "accrualTypeId": accrualTypeId,
       "targetTotal": targetTotal
     };
-
-    return agreementTarget;
   }
 
   const agreementTargets = {
@@ -91,7 +87,7 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
   var agreementTargtsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}");
 
   const buildRequest = function(method, url, body) {
-    var request = {
+    return {
       url: url,
       method: method,
       header: {
@@ -102,9 +98,6 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
         raw: JSON.stringify(body)
       }
     };
-
-    console.log(request);
-    return request;
   }
 
   const accrualDates = datesBetween(agreementStartDate,agreementEndDate);
@@ -116,7 +109,7 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     for (const [key, value] of Object.entries(accrualTypes)) {
 
       // accrualTypes map is key'd by accrualTypeId, so key == accrualTypeId
-      var request = buildRequest('POST', accrualsUrl, buildAccrual(accrualDate, key, 0, 0));
+      let request = buildRequest('POST', accrualsUrl, buildAccrual(accrualDate, key, 0, 0));
 
       pm.sendRequest(request, function (error, result) {
             if (result.code == '200') {
@@ -129,10 +122,10 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
 
   // create agreement targets
   for (const [key, value] of Object.entries(agreementTargets)) {
-    var accrualType = accrualTypes[key];
+    let accrualType = accrualTypes[key];
 
     // agreementTargets map is key'd by accrualTypeId, so key == accrualTypeId and value = totalTarget
-    var request = buildRequest('POST', agreementTargtsUrl, buildAgreementTarget(key, value));
+    let request = buildRequest('POST', agreementTargtsUrl, buildAgreementTarget(key, value));
     pm.sendRequest(request, function (error, result) {
           if (result.code == '200') {
             console.log(`"${accrualType}" Agreement Target created successfully`);

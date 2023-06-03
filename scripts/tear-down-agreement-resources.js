@@ -1,23 +1,22 @@
 const personId = pm.environment.get('personId');
-var agreementsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreements?tenantId={{tenantId}}&filter=personId=='{{personId}}'");
-var accrualsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}");
-var agreementTargtsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}");
+const agreementsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreements?tenantId={{tenantId}}&filter=personId=='{{personId}}'");
+const accrualsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}");
+const agreementTargtsUrl = pm.environment.replaceIn("{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}");
 
 
 const buildRequest = function(method, url) {
-  var request = {
+  return {
     url: url,
     method: method,
     header: {
       'Content-Type': 'application/json'
     }
   };
-  return request;
 };
 
 const deleteAccrualsByAgreementId = function(agreementId) {
   const filter = `&filter=agreementId=="${agreementId}"`;
-  var request = buildRequest('GET', accrualsUrl+filter);
+  let request = buildRequest('GET', accrualsUrl+filter);
 
   pm.sendRequest(request, function (error, result) {
     if (result.code == '200') {
@@ -26,9 +25,9 @@ const deleteAccrualsByAgreementId = function(agreementId) {
 
       for (const accrualId of accrualIds) {
 
-        var accrualsSingleResourceUrl = `{{accruals_service_url}}/resources/accruals/${accrualId}?tenantId={{tenantId}}`;
+        let accrualsSingleResourceUrl = `{{accruals_service_url}}/resources/accruals/${accrualId}?tenantId={{tenantId}}`;
 
-        var deleteRequest = buildRequest('DELETE', pm.environment.replaceIn(accrualsSingleResourceUrl));
+        let deleteRequest = buildRequest('DELETE', pm.environment.replaceIn(accrualsSingleResourceUrl));
         //console.log(deleteRequest);
 
         pm.sendRequest(deleteRequest, function (error, result) {
@@ -44,7 +43,7 @@ const deleteAccrualsByAgreementId = function(agreementId) {
 
 const deleteAgreementTargetsByAgreementId = function(agreementId) {
   const filter = `&filter=agreementId=="${agreementId}"`;
-  var request = buildRequest('GET', agreementTargtsUrl+filter);
+  let request = buildRequest('GET', agreementTargtsUrl+filter);
 
   pm.sendRequest(request, function (error, result) {
     if (result.code == '200') {
@@ -53,9 +52,9 @@ const deleteAgreementTargetsByAgreementId = function(agreementId) {
 
       for (const agreementTargtId of agreementTargtIds) {
 
-        var agreementTargetsSingleResourceUrl = `{{accruals_service_url}}/resources/agreement-targets/${agreementTargtId}?tenantId={{tenantId}}`;
+        let agreementTargetsSingleResourceUrl = `{{accruals_service_url}}/resources/agreement-targets/${agreementTargtId}?tenantId={{tenantId}}`;
 
-        var deleteRequest = buildRequest('DELETE', pm.environment.replaceIn(agreementTargetsSingleResourceUrl));
+        let deleteRequest = buildRequest('DELETE', pm.environment.replaceIn(agreementTargetsSingleResourceUrl));
         //console.log(deleteRequest);
 
         pm.sendRequest(deleteRequest, function (error, result) {
@@ -69,7 +68,21 @@ const deleteAgreementTargetsByAgreementId = function(agreementId) {
   });
 }
 
-var request = buildRequest('GET', agreementsUrl);
+const deleteAgreementById = function(agreementId) {
+
+  let agreementsSingleResourceUrl = `{{accruals_service_url}}/resources/agreements/${agreementId}?tenantId={{tenantId}}`;
+
+  let deleteRequest = buildRequest('DELETE', pm.environment.replaceIn(agreementsSingleResourceUrl));
+
+  pm.sendRequest(deleteRequest, function (error, result) {
+    if (result.code == '200') {
+      console.log(`Agreement "${agreementId}" deleted successfully`);
+    }
+  });
+
+}
+
+let request = buildRequest('GET', agreementsUrl);
 
 pm.sendRequest(request, function (error, result) {
       if (result.code == '200') {
@@ -79,8 +92,8 @@ pm.sendRequest(request, function (error, result) {
         for (const agreementId of agreementIds) {
           deleteAgreementTargetsByAgreementId(agreementId);
           deleteAccrualsByAgreementId(agreementId);
+          deleteAgreementById(agreementId);
         }
       }
     }
 );
-
