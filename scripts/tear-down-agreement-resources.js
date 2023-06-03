@@ -34,7 +34,7 @@ const deleteAccrualsByAgreementId = async function (agreementId) {
   let request = buildRequest('GET', accrualsUrl + filter);
 
   let result = await sendRequest(request);
-  if (result.code === '200') {
+  if (result.code === 200) {
     const accrualIds = result.json().items.map(accrual => accrual.id);
     console.log(accrualIds);
 
@@ -46,7 +46,7 @@ const deleteAccrualsByAgreementId = async function (agreementId) {
           pm.environment.replaceIn(accrualsSingleResourceUrl));
 
       let result = await sendRequest(deleteRequest);
-      if (result.code === '200') {
+      if (result.code === 200) {
         console.log(`Accrual "${accrualId}" deleted successfully`);
       }
     }
@@ -59,7 +59,7 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
   let request = buildRequest('GET', agreementTargtsUrl + filter);
 
   let result = await sendRequest(request);
-  if (result.code === '200') {
+  if (result.code === 200) {
     const agreementTargetIds = result.json().items.map(
         agreementTarget => agreementTarget.id);
     console.log(agreementTargetIds);
@@ -71,7 +71,7 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
           pm.environment.replaceIn(agreementTargetsSingleResourceUrl));
 
       let result = await sendRequest(deleteRequest);
-      if (result.code === '200') {
+      if (result.code === 200) {
         console.log(
             `Agreement Target "${agreementTargetId}" deleted successfully`);
       }
@@ -88,7 +88,7 @@ const deleteAgreementById = async function (agreementId) {
       pm.environment.replaceIn(agreementsSingleResourceUrl));
 
   let result = await sendRequest(deleteRequest);
-  if (result.code === '200') {
+  if (result.code === 200) {
     console.log(`Agreement "${agreementId}" deleted successfully`);
   }
 

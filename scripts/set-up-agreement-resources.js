@@ -112,7 +112,7 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
       let request = buildRequest('POST', accrualsUrl, buildAccrual(accrualDate, key, 0, 0));
 
       pm.sendRequest(request, function (error, result) {
-            if (result.code == '200') {
+            if (result.code === 200) {
               console.log(`"${value}" Accrual placeholder created successfully for ${accrualDate}`);
             }
           }
@@ -127,7 +127,7 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     // agreementTargets map is key'd by accrualTypeId, so key == accrualTypeId and value = totalTarget
     let request = buildRequest('POST', agreementTargtsUrl, buildAgreementTarget(key, value));
     pm.sendRequest(request, function (error, result) {
-          if (result.code == '200') {
+          if (result.code === 200) {
             console.log(`"${accrualType}" Agreement Target created successfully`);
           }
         }

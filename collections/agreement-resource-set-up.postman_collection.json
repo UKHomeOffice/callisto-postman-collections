@@ -1,0 +1,412 @@
+{
+	"info": {
+		"_postman_id": "b4d0a4ad-4848-400a-a9ef-de4c8bb962dc",
+		"name": "Agreement Resource set up",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Set up Agreement Resources",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"var agreementId = jsonData.items[0].id",
+							"const agreementStartDate =  jsonData.items[0].startDate;",
+							"const agreementEndDate =  jsonData.items[0].endDate;",
+							"// const agreementStartDate =  \"2023-04-01\";",
+							"// const agreementEndDate =  \"2023-04-05\";",
+							"",
+							"postman.setEnvironmentVariable(\"agreementId\", agreementId);",
+							"",
+							"pm.sendRequest(\"https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.min.js\", (err, res) => {",
+							"  //convert the response to text and save it as an environment variable",
+							"  pm.collectionVariables.set(\"jsjoda_library\", res.text());",
+							"",
+							"  // eval will evaluate the JavaScript code and initialize the min.js",
+							"  eval(pm.collectionVariables.get(\"jsjoda_library\"));",
+							"",
+							"",
+							"",
+							"  console.log(\"Agreement Start Date:\", agreementStartDate);",
+							"  console.log(\"Agreement End Date:\", agreementEndDate);",
+							"",
+							"  const datesBetween = function(start, end) {",
+							"    let startDate = JSJoda.LocalDate.parse(start);",
+							"    let endDate = JSJoda.LocalDate.parse(end);",
+							"    for(var arr=[],dt=startDate; !dt.isAfter(endDate); dt=dt.plusDays(1)){",
+							"      arr.push(dt);",
+							"    }",
+							"    return arr;",
+							"  };",
+							"",
+							"  const buildAccrual = function(accrualDate, accrualTypeId, cumulativeTarget, cumulativeTotal) {",
+							"    return accrual = {",
+							"      \"tenantId\": pm.environment.get('tenantId'),",
+							"      \"personId\": pm.environment.get('personId'),",
+							"      \"agreementId\": pm.environment.get('agreementId'),",
+							"      \"accrualTypeId\": accrualTypeId,",
+							"      \"accrualDate\": accrualDate,",
+							"      \"cumulativeTarget\": cumulativeTarget,",
+							"      \"cumulativeTotal\": cumulativeTotal,",
+							"      \"contributions\": {",
+							"        \"timeEntries\": {},",
+							"        \"total\": 0",
+							"      }",
+							"    };",
+							"  }",
+							"",
+							"  const buildAgreementTarget = function(accrualTypeId, targetTotal) {",
+							"    return {",
+							"      \"tenantId\": pm.environment.get('tenantId'),",
+							"      \"agreementId\": pm.environment.get('agreementId'),",
+							"      \"accrualTypeId\": accrualTypeId,",
+							"      \"targetTotal\": targetTotal",
+							"    };",
+							"  }",
+							"",
+							"  const agreementTargets = {",
+							"    \"e502eebb-4663-4e5b-9445-9a20441c18d9\": 2192,// Annual Target Hours",
+							"    \"5f06e6ce-1422-4a0c-89dd-f4952e735202\": 104// Night Hours",
+							"  };",
+							"  // \"05bbd915-e907-4259-a2e2-080d7956afec\": 286,// Weekend Hours",
+							"  // \"b94bb25a-7fe2-4599-91ab-f0d58e013aed\": 32,// Public Holidays",
+							"  // \"2a5ea69d-1a2c-409d-b430-43a5dbc403b3\": 50,// On-call Weekday",
+							"  // \"df4c4b08-ac4a-45e0-83bb-856d3219a8b3\": 35,// On-call Weekend",
+							"  // \"a628bf34-d834-437d-a57a-ed549bd9a330\": 2,// On-call Public Holiday",
+							"  // \"c4fd5435-8239-4f1f-9c4b-7f458b7b636d\": 0,// Flexible Credits",
+							"  // \"c73030ed-ed28-4d59-85e8-185f70d85a94\": 0,// Rostered Shift Allowance",
+							"  // \"787d2d12-2aff-4253-b382-bcefded61124\": 64,// Public Holiday Credit",
+							"  // };",
+							"",
+							"  const accrualTypes = {",
+							"    \"e502eebb-4663-4e5b-9445-9a20441c18d9\": \"Annual Target Hours\",",
+							"    \"5f06e6ce-1422-4a0c-89dd-f4952e735202\": \"Night Hours\"",
+							"  };",
+							"",
+							"  //     \"05bbd915-e907-4259-a2e2-080d7956afec\": \"Weekend Hours\",",
+							"  //     \"b94bb25a-7fe2-4599-91ab-f0d58e013aed\": \"Public Holidays\",",
+							"  //     \"2a5ea69d-1a2c-409d-b430-43a5dbc403b3\": \"On-call Weekday\",",
+							"  //     \"df4c4b08-ac4a-45e0-83bb-856d3219a8b3\": \"On-call Weekend\",",
+							"  //     \"a628bf34-d834-437d-a57a-ed549bd9a330\": \"On-call Public Holiday\",",
+							"  //     \"c4fd5435-8239-4f1f-9c4b-7f458b7b636d\": \"Flexible Credits\",",
+							"  //     \"c73030ed-ed28-4d59-85e8-185f70d85a94\": \"Rostered Shift Allowance\",",
+							"  //     \"787d2d12-2aff-4253-b382-bcefded61124\": \"Public Holiday Credit\"",
+							"  // };",
+							"",
+							"",
+							"  var accrualsUrl = pm.environment.replaceIn(\"{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}\");",
+							"  var agreementTargtsUrl = pm.environment.replaceIn(\"{{accruals_service_url}}/resources/agreement-targets?tenantId={{tenantId}}\");",
+							"",
+							"  const buildRequest = function(method, url, body) {",
+							"    return {",
+							"      url: url,",
+							"      method: method,",
+							"      header: {",
+							"        'Content-Type': 'application/json'",
+							"      },",
+							"      body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify(body)",
+							"      }",
+							"    };",
+							"  }",
+							"",
+							"  const accrualDates = datesBetween(agreementStartDate,agreementEndDate);",
+							"  console.log(\"Accrual Dates: \", accrualDates);",
+							"",
+							"  // create accrual placeholders",
+							"  for (const accrualDate of accrualDates) {",
+							"    pm.collectionVariables.set(\"accrualDate\", accrualDate);",
+							"    for (const [key, value] of Object.entries(accrualTypes)) {",
+							"",
+							"      // accrualTypes map is key'd by accrualTypeId, so key == accrualTypeId",
+							"      let request = buildRequest('POST', accrualsUrl, buildAccrual(accrualDate, key, 0, 0));",
+							"",
+							"      pm.sendRequest(request, function (error, result) {",
+							"            if (result.code === 200) {",
+							"              console.log(`\"${value}\" Accrual placeholder created successfully for ${accrualDate}`);",
+							"            }",
+							"          }",
+							"      );",
+							"    }",
+							"  }",
+							"",
+							"  // create agreement targets",
+							"  for (const [key, value] of Object.entries(agreementTargets)) {",
+							"    let accrualType = accrualTypes[key];",
+							"",
+							"    // agreementTargets map is key'd by accrualTypeId, so key == accrualTypeId and value = totalTarget",
+							"    let request = buildRequest('POST', agreementTargtsUrl, buildAgreementTarget(key, value));",
+							"    pm.sendRequest(request, function (error, result) {",
+							"          if (result.code === 200) {",
+							"            console.log(`\"${accrualType}\" Agreement Target created successfully`);",
+							"          }",
+							"        }",
+							"    );",
+							"  }",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"tenantId\": \"{{tenantId}}\",\n    \"personId\": \"{{personId}}\",\n    \"contractualTerms\": {\n        \"agreementType\": \"AHA\",\n        \"fteValue\": 1.0000,\n        \"termsAndConditions\": \"MODERNISED\",\n        \"salaryBasis\": \"NATIONAL\"\n    },\n    \"startDate\": \"2023-04-01\",\n    \"endDate\": \"2023-04-05\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{accruals_service_url}}/resources/agreements?tenantId={{tenantId}}",
+					"host": [
+						"{{accruals_service_url}}"
+					],
+					"path": [
+						"resources",
+						"agreements"
+					],
+					"query": [
+						{
+							"key": "tenantId",
+							"value": "{{tenantId}}",
+							"description": "(Required) "
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tear down Agreement Resources",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = JSON.parse(responseBody);",
+							"const agreementIds = jsonData.items.map(agreement => agreement.id);",
+							"",
+							"const personId = pm.environment.get('personId');",
+							"const accrualsUrl = pm.environment.replaceIn(",
+							"    \"{{accruals_service_url}}/resources/accruals?size=1000&tenantId={{tenantId}}\");",
+							"const agreementTargtsUrl = pm.environment.replaceIn(",
+							"    \"{{accruals_service_url}}/resources/agreement-targets?size=1000&tenantId={{tenantId}}\");",
+							"",
+							"const buildRequest = function (method, url) {",
+							"  return {",
+							"    url: url,",
+							"    method: method,",
+							"    header: {",
+							"      'Content-Type': 'application/json'",
+							"    }",
+							"  };",
+							"};",
+							"",
+							"function sendRequest(req) {",
+							"  return new Promise((resolve, reject) => {",
+							"    pm.sendRequest(req, (err, res) => {",
+							"      if (err) {",
+							"        return reject(err);",
+							"      }",
+							"",
+							"      return resolve(res);",
+							"    })",
+							"  });",
+							"}",
+							"",
+							"const deleteAccrualsByAgreementId = async function (agreementId) {",
+							"  const filter = `&filter=agreementId==\"${agreementId}\"`;",
+							"  let request = buildRequest('GET', accrualsUrl + filter);",
+							"",
+							"  let result = await sendRequest(request);",
+							"  if (result.code === 200) {",
+							"    const accrualIds = result.json().items.map(accrual => accrual.id);",
+							"    console.log(accrualIds);",
+							"",
+							"    for (const accrualId of accrualIds) {",
+							"",
+							"      let accrualsSingleResourceUrl = `{{accruals_service_url}}/resources/accruals/${accrualId}?tenantId={{tenantId}}`;",
+							"",
+							"      let deleteRequest = buildRequest('DELETE',",
+							"          pm.environment.replaceIn(accrualsSingleResourceUrl));",
+							"",
+							"      let result = await sendRequest(deleteRequest);",
+							"      if (result.code === 200) {",
+							"        console.log(`Accrual \"${accrualId}\" deleted successfully`);",
+							"      }",
+							"    }",
+							"",
+							"  }",
+							"}",
+							"",
+							"const deleteAgreementTargetsByAgreementId = async function (agreementId) {",
+							"  const filter = `&filter=agreementId==\"${agreementId}\"`;",
+							"  let request = buildRequest('GET', agreementTargtsUrl + filter);",
+							"",
+							"  let result = await sendRequest(request);",
+							"  if (result.code === 200) {",
+							"    const agreementTargetIds = result.json().items.map(",
+							"        agreementTarget => agreementTarget.id);",
+							"    console.log(agreementTargetIds);",
+							"",
+							"    for (const agreementTargetId of agreementTargetIds) {",
+							"",
+							"      let agreementTargetsSingleResourceUrl = `{{accruals_service_url}}/resources/agreement-targets/${agreementTargetId}?tenantId={{tenantId}}`;",
+							"      let deleteRequest = buildRequest('DELETE',",
+							"          pm.environment.replaceIn(agreementTargetsSingleResourceUrl));",
+							"",
+							"      let result = await sendRequest(deleteRequest);",
+							"      if (result.code === 200) {",
+							"        console.log(",
+							"            `Agreement Target \"${agreementTargetId}\" deleted successfully`);",
+							"      }",
+							"    }",
+							"",
+							"  }",
+							"}",
+							"",
+							"const deleteAgreementById = async function (agreementId) {",
+							"",
+							"  let agreementsSingleResourceUrl = `{{accruals_service_url}}/resources/agreements/${agreementId}?tenantId={{tenantId}}`;",
+							"",
+							"  let deleteRequest = buildRequest('DELETE',",
+							"      pm.environment.replaceIn(agreementsSingleResourceUrl));",
+							"",
+							"  let result = await sendRequest(deleteRequest);",
+							"  if (result.code === 200) {",
+							"    console.log(`Agreement \"${agreementId}\" deleted successfully`);",
+							"  }",
+							"",
+							"}",
+							"",
+							"const deleteAll = async function (agreementIds) {",
+							"  console.log(agreementIds);",
+							"",
+							"  for (const agreementId of agreementIds) {",
+							"    await deleteAgreementTargetsByAgreementId(agreementId);",
+							"    await deleteAccrualsByAgreementId(agreementId);",
+							"    await deleteAgreementById(agreementId);",
+							"  }",
+							"}",
+							"",
+							"deleteAll(agreementIds).then(() => console.log('Agreement data deleted!'));",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{accruals_service_url}}/resources/agreements?tenantId={{tenantId}}&filter=personId=='{{personId}}'",
+					"host": [
+						"{{accruals_service_url}}"
+					],
+					"path": [
+						"resources",
+						"agreements"
+					],
+					"query": [
+						{
+							"key": "tenantId",
+							"value": "{{tenantId}}",
+							"description": "(Required) "
+						},
+						{
+							"key": "filter",
+							"value": "personId=='{{personId}}'"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.collectionVariables.set(\"cumulativeTarget\", 0);",
+					"",
+					"let moment = require('moment');",
+					"",
+					"var accrualDate = moment(\"2023-04-01\",\"YYYY-MM-DD\");",
+					"",
+					"pm.collectionVariables.set(\"accrualDate\", accrualDate);",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "cumulativeTarget",
+			"value": ""
+		},
+		{
+			"key": "accrualDate",
+			"value": ""
+		},
+		{
+			"key": "accrualDates",
+			"value": ""
+		},
+		{
+			"key": "jsjoda_library",
+			"value": ""
+		},
+		{
+			"key": "currentAccrualDate",
+			"value": ""
+		},
+		{
+			"key": "accrulaTypeId",
+			"value": ""
+		},
+		{
+			"key": "targetTotal",
+			"value": ""
+		}
+	]
+}
