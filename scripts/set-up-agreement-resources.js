@@ -74,6 +74,15 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     };
   }
 
+  const buildAgreementTarget = function(accrualTypeId, targetTotal) {
+    return {
+      "tenantId": pm.environment.get('tenantId'),
+      "agreementId": pm.environment.get('agreementId'),
+      "accrualTypeId": accrualTypeId,
+      "targetTotal": targetTotal
+    };
+  }
+
   function sendRequest(req) {
     return new Promise((resolve, reject) => {
       pm.sendRequest(req, (err, res) => {
@@ -83,6 +92,20 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
         return resolve(res);
       })
     });
+  }
+
+  const buildRequest = function(method, url, body) {
+    return {
+      url: url,
+      method: method,
+      header: {
+        'Content-Type': 'application/json'
+      },
+      body: {
+        mode: 'raw',
+        raw: JSON.stringify(body)
+      }
+    };
   }
 
   const creatAccrualPlaceholders = async function(accrualDates, accrualTypes) {
@@ -115,35 +138,19 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     }
   }
 
-  const buildAgreementTarget = function(accrualTypeId, targetTotal) {
-    return {
-      "tenantId": pm.environment.get('tenantId'),
-      "agreementId": pm.environment.get('agreementId'),
-      "accrualTypeId": accrualTypeId,
-      "targetTotal": targetTotal
-    };
-  }
-
-  const buildRequest = function(method, url, body) {
-    return {
-      url: url,
-      method: method,
-      header: {
-        'Content-Type': 'application/json'
-      },
-      body: {
-        mode: 'raw',
-        raw: JSON.stringify(body)
-      }
-    };
-  }
-
-  const accrualDates = datesBetween(agreementStartDate,agreementEndDate);
-
   const createAll = async function (accrualDates, accrualTypes, agreementTargets) {
     await creatAccrualPlaceholders(accrualDates, accrualTypes);
     await createAgreementTargets(agreementTargets, accrualTypes)
   }
+
+  const maxResponseSize = function(numberOfAgreementDays, numberOfAccrualTypes) {
+    return numberOfAgreementDays * numberOfAccrualTypes;
+  }
+
+  const accrualDates = datesBetween(agreementStartDate,agreementEndDate);
+
+  pm.environment.set('maxResponseSize',
+      maxResponseSize(accrualDates.length, Object.keys(accrualTypes).length));
 
   createAll(accrualDates, accrualTypes, agreementTargets)
   .then(() => console.log('Agreement data setup complete!'));
