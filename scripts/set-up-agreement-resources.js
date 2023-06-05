@@ -113,8 +113,8 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
         console.log(`"${accrualType}" Agreement Target created successfully`);
       }
     }
-
   }
+
   const buildAgreementTarget = function(accrualTypeId, targetTotal) {
     return {
       "tenantId": pm.environment.get('tenantId'),
