@@ -1,6 +1,7 @@
 let jsonData = JSON.parse(responseBody);
 const agreementIds = jsonData.items.map(agreement => agreement.id);
 const personId = pm.environment.get('personId');
+const loggingEnabled = pm.environment.get('loggingEnabled') === 'true';
 
 const accrualsUrl = pm.environment.replaceIn(
     "{{accruals_service_url}}/resources/accruals?size=1000&tenantId={{tenantId}}");
@@ -35,7 +36,6 @@ const deleteAccrualsByAgreementId = async function (agreementId) {
   let result = await sendRequest(request);
   if (result.code === 200) {
     const accrualIds = result.json().items.map(accrual => accrual.id);
-    console.log(accrualIds);
 
     for (const accrualId of accrualIds) {
 
@@ -45,7 +45,7 @@ const deleteAccrualsByAgreementId = async function (agreementId) {
           pm.environment.replaceIn(accrualsSingleResourceUrl));
 
       let result = await sendRequest(deleteRequest);
-      if (result.code === 200) {
+      if (result.code === 200 && loggingEnabled) {
         console.log(`Accrual "${accrualId}" deleted successfully`);
       }
     }
@@ -61,7 +61,6 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
   if (result.code === 200) {
     const agreementTargetIds = result.json().items.map(
         agreementTarget => agreementTarget.id);
-    console.log(agreementTargetIds);
 
     for (const agreementTargetId of agreementTargetIds) {
 
@@ -71,7 +70,7 @@ const deleteAgreementTargetsByAgreementId = async function (agreementId) {
           pm.environment.replaceIn(agreementTargetsSingleResourceUrl));
 
       let result = await sendRequest(deleteRequest);
-      if (result.code === 200) {
+      if (result.code === 200 && loggingEnabled) {
         console.log(
             `Agreement Target "${agreementTargetId}" deleted successfully`);
       }
@@ -88,14 +87,12 @@ const deleteAgreementById = async function (agreementId) {
       pm.environment.replaceIn(agreementsSingleResourceUrl));
 
   let result = await sendRequest(deleteRequest);
-  if (result.code === 200) {
+  if (result.code === 200 && loggingEnabled) {
     console.log(`Agreement "${agreementId}" deleted successfully`);
   }
 }
 
 const deleteAll = async function (agreementIds) {
-  console.log(agreementIds);
-
   for (const agreementId of agreementIds) {
     await deleteAgreementTargetsByAgreementId(agreementId);
     await deleteAccrualsByAgreementId(agreementId);
@@ -103,4 +100,4 @@ const deleteAll = async function (agreementIds) {
   }
 }
 
-deleteAll(agreementIds).then(() => console.log('Agreement data deleted!'));
+deleteAll(agreementIds).then(() => console.log('Agreement data teardown complete!'));

@@ -3,8 +3,7 @@ const agreementId = jsonData.items[0].id
 postman.setEnvironmentVariable("agreementId", agreementId);
 const agreementStartDate =  jsonData.items[0].startDate;
 const agreementEndDate =  jsonData.items[0].endDate;
-// const agreementStartDate =  "2023-04-01";
-// const agreementEndDate =  "2023-04-05";
+const loggingEnabled = pm.environment.get('loggingEnabled') === 'true';
 
 const accrualsUrl = pm.environment.replaceIn(
     "{{accruals_service_url}}/resources/accruals?tenantId={{tenantId}}");
@@ -99,7 +98,6 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
   }
 
   const accrualDates = datesBetween(agreementStartDate,agreementEndDate);
-  console.log("Accrual Dates: ", accrualDates);
 
   // create accrual placeholders
   for (const accrualDate of accrualDates) {
@@ -110,10 +108,10 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
       let request = buildRequest('POST', accrualsUrl, buildAccrual(accrualDate, key, 0, 0));
 
       pm.sendRequest(request, function (error, result) {
-            if (result.code === 200) {
-              console.log(`"${value}" Accrual placeholder created successfully for ${accrualDate}`);
-            }
-
+        if (result.code === 200 && loggingEnabled) {
+          console.log(
+              `"${value}" Accrual placeholder created successfully for ${accrualDate}`);
+        }
       });
     }
   }
@@ -125,10 +123,11 @@ pm.sendRequest("https://cdnjs.cloudflare.com/ajax/libs/js-joda/1.11.0/js-joda.mi
     // agreementTargets map is key'd by accrualTypeId, so key == accrualTypeId and value = totalTarget
     let request = buildRequest('POST', agreementTargetsUrl, buildAgreementTarget(key, value));
     pm.sendRequest(request, function (error, result) {
-      if (result.code === 200) {
+      if (result.code === 200 && loggingEnabled) {
         console.log(`"${accrualType}" Agreement Target created successfully`);
       }
     });
   }
 
+  console.log('Agreement data setup complete!')
 });
