@@ -4,9 +4,9 @@ const personId = pm.environment.get('personId');
 const loggingEnabled = pm.environment.get('loggingEnabled') === 'true';
 
 const accrualsUrl = pm.environment.replaceIn(
-    "{{accruals_service_url}}/resources/accruals?size=1000&tenantId={{tenantId}}");
+    "{{accruals_service_url}}/resources/accruals?size={{maxResponseSize}}&tenantId={{tenantId}}");
 const agreementTargetsUrl = pm.environment.replaceIn(
-    "{{accruals_service_url}}/resources/agreement-targets?size=1000&tenantId={{tenantId}}");
+    "{{accruals_service_url}}/resources/agreement-targets?size={{maxResponseSize}}&tenantId={{tenantId}}");
 
 const buildRequest = function (method, url) {
   return {
