@@ -7,7 +7,6 @@ Repository for re-usable Postman collections and scripts
    `Agreement setup` environment (`agreement-resrouce-set-up.postman_environment.json`) in Postman
 2. Select `Agreement setup` environment and set values for the following environment variables:
    `accruals_service_url`, `tenantId` and `personId`
-3.
 
 ## Agreement Resource setup Collection 
 
